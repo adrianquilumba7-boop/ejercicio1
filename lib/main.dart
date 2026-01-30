@@ -11,7 +11,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Lista de Tareas',
+      title: 'Gestor de Tareas',
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        scaffoldBackgroundColor: const Color(0xFFF4F6FA),
+      ),
       home: const TaskPage(),
     );
   }
@@ -26,14 +30,10 @@ class TaskPage extends StatefulWidget {
 
 class _TaskPageState extends State<TaskPage> {
   final TextEditingController _controller = TextEditingController();
-
-  // Lista de tareas
   List<Map<String, dynamic>> tareas = [];
 
   void agregarTarea() {
-    if (_controller.text.trim().isEmpty) {
-      return; // Evita tareas vacías
-    }
+    if (_controller.text.trim().isEmpty) return;
 
     setState(() {
       tareas.add({
@@ -60,59 +60,75 @@ class _TaskPageState extends State<TaskPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gestor de Tareas'),
+        title: const Text('Mis Tareas'),
         centerTitle: true,
+        elevation: 2,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      labelText: 'Nueva tarea',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: agregarTarea,
+        child: const Icon(Icons.add),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: 'Escribe una tarea...',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: agregarTarea,
-                  child: const Text('Agregar'),
-                ),
-              ],
+                prefixIcon: const Icon(Icons.edit),
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: tareas.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: Checkbox(
-                    value: tareas[index]['completada'],
-                    onChanged: (valor) =>
-                        completarTarea(index, valor),
-                  ),
-                  title: Text(
-                    tareas[index]['titulo'],
-                    style: TextStyle(
-                      decoration: tareas[index]['completada']
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
+            const SizedBox(height: 16),
+            Expanded(
+              child: tareas.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No hay tareas pendientes ✨',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: tareas.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          child: ListTile(
+                            leading: Checkbox(
+                              value: tareas[index]['completada'],
+                              onChanged: (valor) =>
+                                  completarTarea(index, valor),
+                            ),
+                            title: Text(
+                              tareas[index]['titulo'],
+                              style: TextStyle(
+                                fontSize: 16,
+                                decoration: tareas[index]['completada']
+                                    ? TextDecoration.lineThrough
+                                    : TextDecoration.none,
+                              ),
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => eliminarTarea(index),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => eliminarTarea(index),
-                  ),
-                );
-              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
